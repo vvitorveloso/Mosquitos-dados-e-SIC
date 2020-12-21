@@ -1,0 +1,133 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+```{r install needed}
+#install.packages("tidyve")
+#install.packages("reshape2")
+#install.packages("ggplot2") 
+#install.packages("gridExtra")
+#install.packages("scales")
+```
+
+```{r, Librarys}
+library(tidyverse) 
+library(reshape2)
+library(ggplot2)
+library(gridExtra)
+library(scales)
+library(readxl)
+library(magrittr)
+```
+
+```{r pega diretorio local}
+script_dir = dirname(rstudioapi::getActiveDocumentContext()$path)
+#cria o diretorio para output
+if (!dir.exists(paste0(script_dir,"/","SOLICITAÇÕES ATENDIDAS CULEX"))) {dir.create(paste0(script_dir,"/","SOLICITAÇÕES ATENDIDAS CULEX"))}
+```
+
+
+```{r Load CSVs}
+#UPDATE
+#file <- paste0(script_dir,"/53210_53210 SOLICITAÇÕES_CULEX_ATENDIDAS_Tratado.csv")
+file_xls <- paste0(script_dir,"/53210_53210 SOLICITAÇÕES_CULEX_ATENDIDAS_Tratado.xlsx")
+
+
+# encode <- "UTF-8"
+# 
+# SOL_ATEND <- read.csv2(
+#   file ,
+#   fileEncoding=encode, 
+#   header =TRUE ,
+#   sep=";",
+#   skipNul=TRUE,
+#   dec=",",
+#   na.strings=c("NA","NaN", " ",""))
+
+
+SOL_ATEND <- read_excel(file_xls)
+
+#data[] <- 
+#cria bkp original
+
+
+```
+
+```{r função}
+
+#UTIL
+#Converte para data
+# SOL %>% select(.[-1] == "2019/01") %>% as.data.frame()
+#SOL_ATEND[-1] <-  as.Date(names(SOL_ATEND)[-1], format="%Y/%M")
+
+
+#FUNÇÃO
+#CRIA TABELA
+SOLICITA_ATEND <- 
+function(X){
+
+SOL_PLOT <- 
+  as.data.frame(melt(SOL_ATEND)) %>% #,id.vars = 'SUBPREFEITURA') %>% head ()
+  filter(across(variable, ~ !grepl('To', .))) %>%
+  filter(.[,1] == X) %>%
+  mutate(variable = as.POSIXct(paste0(.$variable,"/01"), format = "%Y/%m/%d")) #%>%
+
+
+# 
+# ?as.Date
+# 
+# paste0(SOL_PLOT$variable, "-01")
+# 
+# as.Date(SOL_PLOT$variable, "%y/%m")
+# as.POSIXct(dateTime, format = "%Y-%m-%dT%H:%M:%S+000"))
+SOL_PLOT %>%
+  ggplot(aes(x=variable,y=value)) +
+  geom_point() +
+  geom_line() +
+  scale_x_datetime(breaks = seq(min(SOL_PLOT$variable), max(SOL_PLOT$variable), by="2 month")) +
+  ggtitle("53210_53210 SOLICITAÇÕES_CULEX_ATENDIDAS_Tratado.xlsx", X)+
+  ylab("Solicitações") +
+  xlab("Data") +
+  ggsave(paste0(script_dir,"/","SOLICITAÇÕES ATENDIDAS CULEX","/", X,".png"),width = 9, height = 4)
+
+}
+ 
+```
+
+```{r função plot total}
+SOLICITA_ATEND_TOTAL <- 
+  function(){
+
+SOL_PLOT_TOTAL <- 
+  as.data.frame(melt(SOL_ATEND)) %>% #,id.vars = 'SUBPREFEITURA') %>% head ()
+  filter(across(Data, ~ grepl('To', .))) %>%
+  filter(.[,1] == "Total geral") %>%
+  filter(across(variable, ~ !grepl('To', .))) %>%
+  mutate(variable = as.POSIXct(paste0(.$variable,"/01"), format = "%Y/%m/%d")) #%>%
+
+
+SOL_PLOT_TOTAL %>%
+  ggplot(aes(x=variable,y=value)) +
+  geom_point() +
+  geom_line() +
+  scale_x_datetime(breaks = seq(min(SOL_PLOT_TOTAL$variable), max(SOL_PLOT_TOTAL$variable), by="2 month"))+
+  ggtitle("53210_53210 SOLICITAÇÕES_CULEX_ATENDIDAS_Tratado.xlsx", "Município")+
+  ylab("Solicitações") +
+  xlab("Data") +
+  ggsave(paste0(script_dir,"/","SOLICITAÇÕES ATENDIDAS CULEX","/", "Município",".png"),width = 9, height = 4)
+
+
+
+  }
+
+```
+
+```{r chama função}
+SOLICITA_ATEND("PINHEIROS")
+  SOLICITA_ATEND_TOTAL()
+
+
+```
+
