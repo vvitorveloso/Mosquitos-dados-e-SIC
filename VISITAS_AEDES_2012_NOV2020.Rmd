@@ -1,15 +1,22 @@
 ---
-title: "R Notebook"
-output: html_notebook
-editor_options: 
+title: "E-SIC VISITAS_AEDES_2012_NOV2020"
+output: pdf_document
+editor_options:
   chunk_output_type: console
 ---
+```{r include = FALSE}
+knitr::opts_chunk$set(echo=FALSE)
+knitr::opts_chunk$set(message=FALSE)
+knitr::opts_chunk$set(warning=FALSE)
+```
+
 ```{r install needed}
 #install.packages("tidyve")
 #install.packages("reshape2")
 #install.packages("ggplot2") 
 #install.packages("gridExtra")
 #install.packages("scales")
+#install.packages("uchardet")
 ```
 
 ```{r, Librarys}
@@ -18,21 +25,22 @@ library(reshape2)
 library(ggplot2)
 library(gridExtra)
 library(scales)
+library(uchardet)
 ```
 
 ```{r pega diretorio local}
 script_dir = dirname(rstudioapi::getActiveDocumentContext()$path)
 #cria o diretorio para output
-if (!dir.exists(paste0(script_dir,"/","VISITAS_AEDES_2012_NOV2020"))) {dir.create(paste0(script_dir,"/","VISITAS_AEDES_2012_NOV2020"))}
+# if (!dir.exists(paste0(script_dir,"/","VISITAS_AEDES_2012_NOV2020"))) {dir.create(paste0(script_dir,"/","VISITAS_AEDES_2012_NOV2020"))}
 
 ```
 
 ```{r Load CSVs}
 #UPDATE
-file <- paste0(script_dir,"/2012_2020_tratado.csv")
+file <- paste0(script_dir,"/DADOS TRATADOS/2012_2020_tratado.csv")
 
 #Verifica a codificação LINUX
-encode <- as.character(read.table(pipe(paste("uchardet ",file))))
+encode <- uchardet::detect_file_enc(file)
 #Lê os dados
 
 ACOES <- read.csv2(
@@ -46,7 +54,6 @@ ACOES <- read.csv2(
 
 #data[] <- 
 #cria bkp original
-ACOESBKP <- ACOES 
 
 #verifica
 #sapply(ACOES, class)
@@ -106,16 +113,18 @@ plot<-
   #muda de cientifico para padrão original da lista  
       scale_y_continuous(labels = comma_format(big.mark = ".",
                                            decimal.mark = ",")) +
-      ggtitle("VISITAS_AEDES_2012_NOV2020.XLSX")+
-      ggsave(paste0(script_dir,"/","VISITAS_AEDES_2012_NOV2020","/",X,"/",gsub('\\.', ' ', i),".png"))
+      ggtitle(paste0(X," - VISITAS_AEDES_2012_NOV2020.XLSX"))#+
+      print(plot)
+#     ggsave(paste0(script_dir,"/","VISITAS_AEDES_2012_NOV2020","/",X,"/",gsub('\\.', ' ', i),".png"))
 
   }
 }
 
+
 ```
 
 
-```{r teste}
+```{r Município}
 
 #filtra por distrito    
   ACOES_MUNICIPIO <-
@@ -127,7 +136,6 @@ plot<-
 #  summarise_all(sum,is.na(1))
 summarise_if(is.numeric, sum,na.rm=T)
 
-unique(ACOESBKP$Ano)
 
 
 #lista de colunas
@@ -165,21 +173,33 @@ plot<-
 #muda de cientifico para padrão original da lista  
       scale_y_continuous(labels = comma_format(big.mark = ".",
                                            decimal.mark = ",")) +
-      ggtitle("VISITAS_AEDES_2012_NOV2020.XLSX")+
-      ggsave(paste0(script_dir,"/","VISITAS_AEDES_2012_NOV2020","/","Município","/",gsub('\\.', ' ', i),".png"))
+      ggtitle(paste0("Município"," - VISITAS_AEDES_2012_NOV2020.XLSX"))#+
+ #     ggsave(paste0(script_dir,"/","VISITAS_AEDES_2012_NOV2020","/","Município","/",gsub('\\.', ' ', i),".png"))
 
+print(plot)
 }
+
 
 ```
 
 
-```{r chama a função}
-
+```{r chama a função para Alto de Pinheiros }
 DISTRI("Alto de Pinheiros")
-DISTRI("Pinheiros")
-DISTRI("Jardim Paulista")
-DISTRI("Itaim Bibi")
+```
 
+
+```{r chama a função para Pinheiros}
+DISTRI("Pinheiros")
+```
+
+
+```{r chama a função para Jardim Paulista}
+DISTRI("Jardim Paulista")
+```
+
+
+```{r chama a função para Itaim Bibi}
+DISTRI("Itaim Bibi")
 
 ```
 
